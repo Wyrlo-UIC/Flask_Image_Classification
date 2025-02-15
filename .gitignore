@@ -1,0 +1,7 @@
+env/
+__pycache__/
+*.pyd
+*.log
+static/uploads/
+cnn_model_class_indices.json
+cnn_model.h5

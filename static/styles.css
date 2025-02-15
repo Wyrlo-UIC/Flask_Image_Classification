@@ -1,0 +1,182 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f4f4f4;
+}
+.container {
+    background: white;
+    padding: 15px;
+    margin-top: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+.image-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+.image-preview img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+button {
+    margin-top: 10px;
+    padding: 10px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+button:hover {
+    background-color: #0056b3;
+}
+
+ .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+#result_images{
+    display:none;
+}
+
+.file-input {
+    display: none; 
+}
+
+.custom-file-label {
+    display: inline-block;
+    padding: 10px 15px;
+    background:  linear-gradient(144deg,#AF40FF, #5B42F3 50%,#00DDEB); 
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.custom-file-label:hover {
+    background:  linear-gradient(144deg,#00DDEB, #5B42F3 50%,#AF40FF);
+}
+
+.file-name {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+.button-general {
+    align-items: center;
+    background-image: linear-gradient(144deg,#AF40FF, #5B42F3 50%,#00DDEB);
+    border: 0;
+    border-radius: 8px;
+    box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    display: flex;
+    font-family: Phantomsans, sans-serif;
+    font-size: 20px;
+    justify-content: center;
+    line-height: 1em;
+    max-width: 100%;
+    min-width: 100px;
+    padding: 3px;
+    text-decoration: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.button-general:active,
+.button-general:hover {
+outline: 0;
+}
+
+.button-general span {
+background-color: rgb(255, 255, 255);
+color: rgb(0,0,10);
+padding: 16px 24px;
+border-radius: 6px;
+width: 100%;
+height: 100%;
+transition: 300ms;
+}
+
+.button-general:hover span {
+background: none;
+color:rgb(255,255,255);
+}
+
+.button-container{
+display: flex;
+gap: 10px; 
+align-items: center; 
+}
+
+.name-input {
+width: 70%;
+padding: 10px;
+font-size: 16px;
+border: 2px solid #6a11cb; 
+border-radius: 5px;
+outline: none;
+transition: 0.3s;
+}
+
+.name-input:focus {
+border-color: #2575fc; 
+box-shadow: 0 0 5px rgba(37, 117, 252, 0.5); 
+}
+.name-input {
+background: #f9f9f9;
+color: #333;
+}
+
+.name-input::placeholder {
+color: #999;
+font-style: italic;
+}
+
+@media (min-width: 768px) {
+.button-general {
+font-size: 12px;
+min-width: 90px;
+}
+}
+
+.spinner {
+  background:linear-gradient(#FF00FF, #00FFFF);
+-webkit-mask:radial-gradient(farthest-side,#0000 calc(100% - 10px),#fff 0);
+  mask:radial-gradient(farthest-side,#0000 calc(100% - 10px),#fff 0);
+  border-radius: 50%;  
+ position: fixed;
+inset : calc(50% - 50px);
+ animation: spin 2s linear infinite; 
+}
+
+.border-container {
+    border: 2px solid #6a11cb;  /* Border size, style, and color */
+    padding: 15px;            /* Space inside the container */
+    margin: 10px;             /* Space outside the container */
+    border-radius: 8px;       /* Rounded corners */
+    max-width: 100%;    /* Center text */
+}
+
+@keyframes spin {
+100% { transform: rotate(360deg); }
+}

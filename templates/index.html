@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Classification</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+    <h2>Upload Images for Classification</h2>
+
+    <form id="imageContainerForm">
+        <div class="button-container">
+            <button type="button" onclick="addClassSection()" class="button-general"><span><img src="{{ url_for('static', filename='icons/plus.svg') }}" width="18" height="18"> Add Class</span></button>
+            <button type="button" onclick="uploadAllClasses()" class="button-general"><span>📤 Upload All</span></button>
+            <button type="button" onclick="trainModel()" class="button-general"><span>🎯 Train Model</span></button>
+            <button type="button" onclick="clearUploads()" class="button-general"><span>🗑️ Clear Uploads</span></button>
+            <button type="button" onclick="clearModel()" class="button-general"><span>♻️ Reset Model</span></button>
+        </div>
+        <div id="container-wrapper"></div>
+    </form>
+    
+    <p id="trainingAccuracy"></p>
+        
+    <div class="overlay" id="overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <h3>Upload Image for Prediction</h3>
+    <div id="image-prediction-wrapper"></div>
+
+    <h3>Prediction Result:</h3>
+    <div id="result-prediction-wrapper"></div>
+    
+    <script>
+        let classCount = 0;
+        let resCount = 0;
+
+        function test(){
+            var overlay = document.getElementById("overlay");
+            overlay.style.display = "flex"; 
+            
+            setTimeout(function() {
+                overlay.style.display = "none"; 
+            }, 5000);
+        }
+        predictClass();
+        function resultClass(){console.log("yes");
+            resCount++;
+            const wrapper = document.getElementById("result-prediction-wrapper");
+            const container = document.createElement("div");
+
+            const pLabel = document.createElement("p");
+            pLabel.id = `predictionText_${resCount}`;
+
+            const predImg = document.createElement("img");
+            predImg.src = "";
+            predImg.style = "max-width: 300px; display: none;";
+            predImg.id = `predictedImage_${resCount}`;
+
+            container.appendChild(pLabel);
+            container.appendChild(predImg);
+
+            wrapper.prepend(container);
+
+            predictImage();
+        }
+        function predictClass(){
+            const wrapper = document.getElementById("image-prediction-wrapper");
+            const container = document.createElement("div");
+
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = "image/*";
+            fileInput.multiple = false;
+            fileInput.id = "predictImage";
+            fileInput.classList.add("file-input");
+
+            const customFileLabel = document.createElement("label");
+            customFileLabel.innerText = "Choose File";
+            customFileLabel.classList.add("custom-file-label");
+            customFileLabel.htmlFor = fileInput.id; 
+
+            const fileNameDisplay = document.createElement("p");
+            fileNameDisplay.classList.add("file-name");
+            fileNameDisplay.innerText = "No file chosen";
+
+            fileInput.addEventListener("change", function () {
+                fileNameDisplay.innerText = this.files.length > 0 
+                    ? "1 File selected"
+                    : "No file chosen";
+            });
+
+            const buttonPredict = document.createElement("button");
+            const spanPredict = document.createElement("span");
+            buttonPredict.onclick = function(){
+                resultClass();
+            }
+            buttonPredict.classList.add("button-general");
+            buttonPredict.type = "button";
+
+            spanPredict.textContent = "🔍 Predict";
+            buttonPredict.appendChild(spanPredict);
+            container.appendChild(fileInput);
+            container.appendChild(customFileLabel);
+            container.appendChild(fileNameDisplay);
+            container.appendChild(buttonPredict);
+            wrapper.appendChild(container);
+        }
+
+        function addClassSection() {
+            classCount++
+            const wrapper = document.getElementById("container-wrapper");
+            const container = document.createElement("div");
+            container.classList.add("border-container");
+            container.id = `class_${classCount}`;
+
+            const nameLabel = document.createElement("label");
+            nameLabel. innerText ="Name: ";
+            const nameInput = document.createElement("input");
+            nameInput.type = "text";
+            nameInput.classList.add("name-input");
+            nameInput.placeholder = "Enter name";
+            nameInput.required = true;
+            nameInput.id = `class_name_${classCount}`;
+
+            const fileLabel = document.createElement("p");
+            fileLabel.innerText = "Upload Images:";
+
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = "image/*";
+            fileInput.multiple = true;
+            fileInput.classList.add("file-input");
+            fileInput.id = `images_${classCount}`;
+
+            const customFileLabel = document.createElement("label");
+            customFileLabel.innerText = "Choose File";
+            customFileLabel.classList.add("custom-file-label");
+            customFileLabel.htmlFor = fileInput.id; 
+
+            const fileNameDisplay = document.createElement("p");
+            fileNameDisplay.classList.add("file-name");
+            fileNameDisplay.innerText = "No file chosen";
+
+            fileInput.addEventListener("change", function () {
+                fileNameDisplay.innerText = this.files.length > 0 
+                    ? this.files.length + " Files selected"
+                    : "No file chosen";
+            });
+
+            const previewDiv = document.createElement("div");
+            previewDiv.classList.add("image-preview");
+
+            fileInput.addEventListener("change", function () {
+                previewImages(fileInput, previewDiv);
+            });
+            container.appendChild(nameLabel);
+            container.appendChild(nameInput);
+            container.appendChild(document.createElement("br"));
+            container.appendChild(fileLabel);
+            container.appendChild(customFileLabel);
+            container.appendChild(fileInput); 
+            container.appendChild(fileNameDisplay); 
+            container.appendChild(previewDiv);
+
+            wrapper.appendChild(container);
+                
+        }
+
+        function previewImages(input, previewDiv) {
+            previewDiv.innerHTML = "";
+            const files = Array.from(input.files).slice(0, 10); 
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    previewDiv.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+
+        function uploadAllClasses() {
+            try{
+                showSpinner();
+                const formData = new FormData();
+                document.querySelectorAll("[id^='class_name_']").forEach((input, index) => {
+                    const className = input.value.trim();
+                    const fileInput = document.getElementById(`images_${index + 1}`);
+
+                    if (!className || fileInput.files.length === 0) {
+                        alert(`Class ${index + 1} is missing a name or images.`);
+                        return;
+                    }
+
+                    formData.append("class_names[]", className);
+
+                    Array.from(fileInput.files).forEach(file => {
+                        formData.append(`images_${index}[]`, file);
+                    });
+                });
+
+                fetch("/upload", { method: "POST", body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message)
+                    hideSpinner();
+                })
+                .catch(error => console.error("Error:", error));
+                
+            }catch(err){
+                hideSpinner();
+                alert("Error in uploading the classes")
+            }
+        }
+
+        function showSpinner(){
+            var overlay = document.getElementById("overlay");
+            overlay.style.display = "flex"; 
+        }
+
+        function hideSpinner(){
+            var overlay = document.getElementById("overlay");
+                overlay.style.display = "none"; 
+        }
+
+        function trainModel() {
+            try{
+                showSpinner();
+                fetch("/train", { method: "POST" })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        let accuracy = data.accuracy;
+                        if (isNaN(accuracy) || accuracy === undefined) {
+                            accuracy = 0;  
+                        }
+                        document.getElementById("trainingAccuracy").innerText = `Training Accuracy: ${(accuracy * 100).toFixed(2)}%`;
+                    }
+                    hideSpinner();
+                })
+                .catch(error => console.error("Error:", error));
+              
+             }catch(err){
+                hideSpinner();
+                alert("Error in training the model")
+            }
+        }
+
+        function clearModel() {
+            try{
+            showSpinner();
+            fetch("/clear_model", { method: "POST" })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                document.getElementById("trainingAccuracy").innerText = "";
+                hideSpinner();
+            })
+            .catch(error => console.error("Error:", error));
+         
+            }catch(err){
+                hideSpinner();
+                alert("Error in clearing the model")
+            }
+        }
+
+        function predictImage() {
+            const formData = new FormData();
+            formData.append("image", document.getElementById("predictImage").files[0]);
+
+            fetch("/predict", { method: "POST", body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById(`predictionText_${resCount}`).innerText = `Predicted Class: ${data.predicted_class}`;
+                    const imgElement = document.getElementById(`predictedImage_${resCount}`);
+                    imgElement.src = data.image_url;
+                    imgElement.style.display = "block";
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function clearUploads() {
+         try{
+            showSpinner();
+            fetch("/clear_uploads", { method: "POST" })
+            .then(() => {alert("Uploads cleared!")
+            hideSpinner();
+            })
+            .catch(error => console.error("Error:", error));
+      
+         }catch(err){
+            hideSpinner();
+            alert("Error in clearing the uploads folder")
+         }
+        }
+    </script>
+
+</body>
+</html>
