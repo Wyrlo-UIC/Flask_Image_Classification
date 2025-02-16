@@ -230,7 +230,7 @@
         }
 
         function trainModel() {
-            try{
+            try {
                 showSpinner();
                 fetch("/train", { method: "POST" })
                 .then(res => res.json())
@@ -242,17 +242,21 @@
                         if (isNaN(accuracy) || accuracy === undefined) {
                             accuracy = 0;  
                         }
+                        // Update the training accuracy paragraph text
                         document.getElementById("trainingAccuracy").innerText = `Training Accuracy: ${(accuracy * 100).toFixed(2)}%`;
                     }
                     hideSpinner();
                 })
-                .catch(error => console.error("Error:", error));
-              
-             }catch(err){
+                .catch(error => {
+                    console.error("Error:", error);
+                    hideSpinner();
+                });
+            } catch (err) {
                 hideSpinner();
-                alert("Error in training the model")
+                alert("Error in training the model");
             }
         }
+
 
         function clearModel() {
             try{
@@ -273,23 +277,32 @@
         }
 
         function predictImage() {
-            const formData = new FormData();
-            formData.append("image", document.getElementById("predictImage").files[0]);
+        const formData = new FormData();
+        formData.append("image", document.getElementById("predictImage").files[0]);
+        
+        showSpinner();
 
-            fetch("/predict", { method: "POST", body: formData })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    document.getElementById(`predictionText_${resCount}`).innerText = `Predicted Class: ${data.predicted_class}`;
-                    const imgElement = document.getElementById(`predictedImage_${resCount}`);
-                    imgElement.src = data.image_url;
-                    imgElement.style.display = "block";
-                }
-            })
-            .catch(error => console.error("Error:", error));
-        }
+        fetch("/predict", { method: "POST", body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                // Make sure predicted_class is a string
+                document.getElementById(`predictionText_${resCount}`).innerText = `Predicted Class: ${data.predicted_class}`;
+                const imgElement = document.getElementById(`predictedImage_${resCount}`);
+                imgElement.src = data.image_url;
+                imgElement.style.display = "block";
+            }
+            hideSpinner();
+        })
+        .catch(error => {
+            hideSpinner();
+            console.error("Error:", error)
+        });
+    }
+
+
 
         function clearUploads() {
          try{
