@@ -42,7 +42,7 @@ def train_model(dataset_path, model_path):
     model = create_model(num_classes)
 
     # Train the model
-    history = model.fit(train_data, validation_data=val_data, epochs=10)
+    history = model.fit(train_data, validation_data=val_data, epochs=50)
 
     # Save model and class indices
     model.save(model_path)

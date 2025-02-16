@@ -1,23 +1,20 @@
 from flask import Flask, request, jsonify, render_template
 import os
 from werkzeug.utils import secure_filename
-import numpy as np
+import shutil
 from cnn_model import train_model, predict_image
 from PIL import Image
-import shutil
 
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "static/uploads"
-MODEL_FOLDER = "model"
+MODEL_FOLDER = "models"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(MODEL_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MODEL_FOLDER"] = MODEL_FOLDER
-
-class_images = {}
 
 @app.route("/")
 def index():
@@ -26,18 +23,17 @@ def index():
 @app.route("/upload", methods=["POST"])
 def upload_images():
     class_names = request.form.getlist("class_names[]")
-
     if not class_names:
         return jsonify({"error": "At least one class is required"}), 400
 
     for i, class_name in enumerate(class_names):
         class_path = os.path.join(UPLOAD_FOLDER, class_name)
         os.makedirs(class_path, exist_ok=True)
-        
+
         uploaded_files = request.files.getlist(f"images_{i}[]")
         if not uploaded_files:
             return jsonify({"error": f"No images uploaded for class {class_name}"}), 400
-        
+
         for file in uploaded_files:
             filename = secure_filename(file.filename)
             file_path = os.path.join(class_path, filename)
@@ -57,10 +53,8 @@ def train():
 
     return jsonify({
         "message": "Model trained successfully!",
-        "accuracy": result["accuracy"]  # Ensure it's a valid number
+        "accuracy": result["accuracy"]
     })
-
-
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -70,7 +64,7 @@ def predict():
     file = request.files["image"]
     filename = secure_filename(file.filename)
     file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    file.save(file_path)  # Save the image temporarily for display
+    file.save(file_path)
 
     model_path = os.path.join(MODEL_FOLDER, "cnn_model.h5")
     predicted_class = predict_image(Image.open(file).convert("RGB"), model_path)
@@ -83,8 +77,8 @@ def predict():
 
 @app.route("/clear_uploads", methods=["POST"])
 def clear_uploads():
-    shutil.rmtree(UPLOAD_FOLDER)  # Delete all images
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Recreate empty folder
+    shutil.rmtree(UPLOAD_FOLDER)
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     return jsonify({"message": "Uploads cleared successfully!"})
 
 @app.route("/clear_model", methods=["POST"])
@@ -92,11 +86,8 @@ def clear_model():
     model_path = os.path.join(MODEL_FOLDER, "cnn_model.h5")
     class_indices_path = model_path.replace(".h5", "_class_indices.json")
 
-    # Check and delete model file
     if os.path.exists(model_path):
         os.remove(model_path)
-
-    # Check and delete class indices file
     if os.path.exists(class_indices_path):
         os.remove(class_indices_path)
 
